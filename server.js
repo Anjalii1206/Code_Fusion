@@ -6,7 +6,7 @@ const { Server } = require('socket.io');            //Server class is being impo
 const ACTIONS = require('./src/Actions');
 //const cors=require('cors');
 const server = http.createServer(app);
-const io = new Server(server);             // created a socket instance
+const io = new Server(server);                      // created a socket instance
 
 const userSocketMap = {};
 
@@ -41,14 +41,14 @@ io.on("connection", (socket) => {
         console.log(users);
     
         
-        // Emit JOINED event only to the user who just joined
+    // Emit JOINED event only to the user who just joined
         socket.emit(ACTIONS.JOINED, {
             users,
             username,
             socketID: socket.id,
         });
     
-        // Emit updated user list to all users in the room
+    // Emit updated user list to all users in the room
         socket.broadcast.to(roomID).emit(ACTIONS.JOINED, {
             users,
             username,
@@ -73,6 +73,10 @@ io.on("connection", (socket) => {
         socket.to(roomID).emit(ACTIONS.OUTPUT_CHANGE, { output });
   });
   
+  socket.on('user-typing', ({ roomID, username }) => {
+    //console.log(`${username} is typing in room ${roomID}`);
+    socket.to(roomID).emit('user-typing', { username });
+});
 
     socket.on(ACTIONS.DISCONNECTED, () => {
         const rooms = [...socket.rooms];
@@ -82,47 +86,16 @@ io.on("connection", (socket) => {
                 username: userSocketMap[socket.id],
             });
         });
-        delete userSocketMap[socket.id];            //delete the disconnected user's entry from the userSocketMap
+        delete userSocketMap[socket.id];               //delete the disconnected user's entry from the userSocketMap
         socket.leave();
     })
 })
 
+
+
 require('dotenv').config();
 
 const port = process.env.PORT;
-
-/*
- //-----------------------------DEPLOYMENT---------------------------------------
-
-    app.use(express.static(path.join(__dirname, 'build')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'build', 'index.html'));
-    });
-
-
-
-const __dirname1 = path.resolve();
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "build")));
-
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname1, "build", "index.html"))
-  );
-} else {
-  app.get("/", (req, res) => {
-    res.send("API is running..");
-  });
-}
-
-
-console.log(__dirname);
-console.log(path.join(__dirname, 'build'));
-
-
- //----------------------------------------------------------------------
-*/
-
 
 
 
